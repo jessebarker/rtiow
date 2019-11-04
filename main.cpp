@@ -1,24 +1,38 @@
 #include "ppm.h"
+#include "ray.h"
 
+vec3 colorAt(const Ray& r)
+{
+    vec3 direction = r.direction();
+    direction.normalize();
+    float t = 0.5f * (direction.y() + 1.0f);
+    return (1.0f - t) * vec3(1.0) + t * vec3(0.5, 0.7, 1.0);
+}
 int main(int argc, char** argv)
 {
-    const unsigned int width = 200;
-    const unsigned int height = 100;
-    const unsigned int maxUIColor = 255;
+    const unsigned int width(200);
+    const unsigned int height(100);
+    const unsigned int maxUIColor(255);
+
     PPMImage ppm(width, height, maxUIColor);
     ppm.EmitHeader();
-    const float b = 0.2;
-    const float maxColor = 255.99f;
-    const unsigned int ub = static_cast<unsigned int>(maxColor * b);
-    //const unsigned int maxUInt = 0 - 1;
+
+    const vec3 lowerLeft(-2.0f, -1.0f, -1.0f);
+    const vec3 horizontal(4.0f, 0.0f, 0.0f);
+    const vec3 vertical(0.0f, 2.0f, 0.0f);
+    const vec3 origin(0.0f);
+    const float maxColor(255.99f);
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
-        float g = float(y) / float(height);
-        unsigned int ug = static_cast<unsigned int>(maxColor * g);
+        float v = float(y) / float(height);
         for (unsigned int x = 0; x < width; x++)
         {
-            float r = float(x) / float(width);
-            unsigned int ur = static_cast<unsigned int>(maxColor * r);
+            float u = float(x) / float(width);
+            Ray r(origin, lowerLeft + u * horizontal + v * vertical);
+            vec3 color = colorAt(r);
+            unsigned int ur = static_cast<unsigned int>(maxColor * color.x());
+            unsigned int ug = static_cast<unsigned int>(maxColor * color.y());
+            unsigned int ub = static_cast<unsigned int>(maxColor * color.z());
             ppm.EmitOneColor(ur, ug, ub);
         }
     }
