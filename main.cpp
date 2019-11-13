@@ -2,13 +2,31 @@
 #include "ray.h"
 #include "sphere.h"
 #include "camera.h"
+#include "random.h"
+
+namespace
+{
+RandomGenerator rg;
+
+vec3 randomPointInUnitSphere()
+{
+    vec3 point;
+    float length = 0.0f;
+    do
+    {
+        point = 2.0f * vec3(rg.GetMinusOneToOne(), rg.GetMinusOneToOne(), rg.GetMinusOneToOne()) - vec3(1.0f);
+        length = point.length();
+    } while ((length * length) >= 1.0f);
+    return point;
+}
 
 vec3 colorAt(const Ray& r, const Hittable* world)
 {
     HitInfo info;
-    if (world->hit(r, 0.0, MAXFLOAT, info))
+    if (world->hit(r, 0.001f, MAXFLOAT, info))
     {
-        return 0.5f * (info.normal + 1.0f);
+        vec3 target = info.point + info.normal + randomPointInUnitSphere();
+        return 0.5f * colorAt(Ray(info.point, target - info.point), world);
     }
     else
     {
@@ -18,6 +36,16 @@ vec3 colorAt(const Ray& r, const Hittable* world)
         return (1.0f - t) * vec3(1.0) + t * vec3(0.5f, 0.7f, 1.0f);
     }
 }
+
+void ApplyGamma(vec3& linearColor)
+{
+    const float gammaPower(1.0f / 2.2f);
+    linearColor.x(pow(linearColor.x(), gammaPower));
+    linearColor.y(pow(linearColor.y(), gammaPower));
+    linearColor.z(pow(linearColor.z(), gammaPower));
+}
+
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -35,8 +63,6 @@ int main(int argc, char** argv)
     list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f);
     Hittable* world = new HittableList(list, 2);
     Camera camera;
-    std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    std::mt19937 generator;
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
@@ -45,13 +71,14 @@ int main(int argc, char** argv)
             vec3 color;
             for (unsigned int s = 0; s < numSamples; s++)
             {
-                float v = float(y + distribution(generator)) / float(height);
-                float u = float(x + distribution(generator)) / float(width);
+                float v = float(y + rg.GetZeroToOne()) / float(height);
+                float u = float(x + rg.GetZeroToOne()) / float(width);
                 Ray r = camera.GetRay(u, v);
                 vec3 point = r.pointAt(2.0f);
                 color += colorAt(r, world);
             }
             color /= float(numSamples);
+            ApplyGamma(color);
             unsigned int ur = static_cast<unsigned int>(maxColor * color.x());
             unsigned int ug = static_cast<unsigned int>(maxColor * color.y());
             unsigned int ub = static_cast<unsigned int>(maxColor * color.z());
