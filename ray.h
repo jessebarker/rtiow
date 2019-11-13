@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../libmatrix/vec.h"
+#include "libmatrix/vec.h"
 
 class Ray
 {
