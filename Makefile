@@ -1,6 +1,7 @@
 CXXFLAGS = -Wall -Werror -std=c++17 -pedantic -g
 RTTARGET = rtiow
 RTSRCS = main.cpp
+LMINCS = ../
 RTOBJS = $(LIBSRCS:.cpp=.o)
 
 # Make sure to build both the library targets and the tests, and generate 
@@ -8,7 +9,7 @@ RTOBJS = $(LIBSRCS:.cpp=.o)
 default: $(RTTARGET)
 
 $(RTTARGET): $(RTSRCS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -I $(LMINCS) -o $@ $^
 
 clean :
 	$(RM) $(RTOBJS) $(RTTARGET)
