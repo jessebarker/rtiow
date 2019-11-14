@@ -1,32 +1,25 @@
 #include "ppm.h"
-#include "ray.h"
-#include "sphere.h"
 #include "camera.h"
-#include "random.h"
+#include "sphere.h"
+#include "lambertian.h"
+#include "metal.h"
 
 namespace
 {
 RandomGenerator rg;
 
-vec3 randomPointInUnitSphere()
-{
-    vec3 point;
-    float length = 0.0f;
-    do
-    {
-        point = 2.0f * vec3(rg.GetMinusOneToOne(), rg.GetMinusOneToOne(), rg.GetMinusOneToOne()) - vec3(1.0f);
-        length = point.length();
-    } while ((length * length) >= 1.0f);
-    return point;
-}
-
-vec3 colorAt(const Ray& r, const Hittable* world)
+vec3 colorAt(const Ray& r, const Hittable* world, int depth)
 {
     HitInfo info;
     if (world->hit(r, 0.001f, MAXFLOAT, info))
     {
-        vec3 target = info.point + info.normal + randomPointInUnitSphere();
-        return 0.5f * colorAt(Ray(info.point, target - info.point), world);
+        Ray scattered;
+        vec3 attenuation;
+        if (depth < 50 && info.material->scatter(r, info, attenuation, scattered))
+        {
+            return attenuation * colorAt(scattered, world, depth + 1);
+        }
+        return vec3(0.0f);
     }
     else
     {
@@ -37,7 +30,7 @@ vec3 colorAt(const Ray& r, const Hittable* world)
     }
 }
 
-void ApplyGamma(vec3& linearColor)
+void applyGamma(vec3& linearColor)
 {
     const float gammaPower(1.0f / 2.2f);
     linearColor.x(pow(linearColor.x(), gammaPower));
@@ -56,12 +49,14 @@ int main(int argc, char** argv)
     const unsigned int numSamples(100);
 
     PPMImage ppm(width, height, maxUIColor);
-    ppm.EmitHeader();
+    ppm.emitHeader();
 
-    Hittable* list[2];
-    list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f);
-    list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f);
-    Hittable* world = new HittableList(list, 2);
+    Hittable* list[4];
+    list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.8f, 0.3f, 0.3f)));
+    list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(vec3(0.8f, 0.8f, 0.0f)));
+    list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(vec3(0.8f, 0.6f, 0.2f), 1.0f));
+    list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new Metal(vec3(0.8f, 0.8f, 0.8f), 0.3f));
+    Hittable* world = new HittableList(list, 4);
     Camera camera;
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
@@ -71,18 +66,18 @@ int main(int argc, char** argv)
             vec3 color;
             for (unsigned int s = 0; s < numSamples; s++)
             {
-                float v = float(y + rg.GetZeroToOne()) / float(height);
-                float u = float(x + rg.GetZeroToOne()) / float(width);
-                Ray r = camera.GetRay(u, v);
+                float v = float(y + rg.getZeroToOne()) / float(height);
+                float u = float(x + rg.getZeroToOne()) / float(width);
+                Ray r = camera.getRay(u, v);
                 vec3 point = r.pointAt(2.0f);
-                color += colorAt(r, world);
+                color += colorAt(r, world, 0);
             }
             color /= float(numSamples);
-            ApplyGamma(color);
+            applyGamma(color);
             unsigned int ur = static_cast<unsigned int>(maxColor * color.x());
             unsigned int ug = static_cast<unsigned int>(maxColor * color.y());
             unsigned int ub = static_cast<unsigned int>(maxColor * color.z());
-            ppm.EmitOneColor(ur, ug, ub);
+            ppm.emitOneColor(ur, ug, ub);
         }
     }
 }

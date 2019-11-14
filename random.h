@@ -13,12 +13,23 @@ public:
         , distributionMinusOneToOne_(-1.0f, 1.0f)
     {
     }
-    double GetZeroToOne()
+    double getZeroToOne()
     {
         return distributionZeroToOne_(generator_);
     }
-    double GetMinusOneToOne()
+    double getMinusOneToOne()
     {
         return distributionMinusOneToOne_(generator_);
+    }
+    vec3 getPointInUnitSphere()
+    {
+        vec3 point;
+        float length = 0.0f;
+        do
+        {
+            point = 2.0f * vec3(getMinusOneToOne(), getMinusOneToOne(), getMinusOneToOne()) - vec3(1.0f);
+            length = point.length();
+        } while ((length * length) >= 1.0f);
+        return point;
     }
 };

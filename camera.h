@@ -1,6 +1,5 @@
 #pragma once
 
-#include <random>
 #include "ray.h"
 
 class Camera
@@ -17,7 +16,7 @@ public:
         , lowerLeft_(-2.0f, -1.0f, -1.0f)
     {
     }
-    Ray GetRay(float u, float v)
+    Ray getRay(float u, float v)
     {
         return Ray(origin_, lowerLeft_ + u * horizontal_ + v * vertical_ - origin_);
     }

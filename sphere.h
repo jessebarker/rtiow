@@ -1,17 +1,19 @@
 #pragma once
+
 #include "hittable.h"
 
 class Sphere : public Hittable
 {
     vec3 center_;
     float radius_;
+    Material* material_;
 public:
-
     Sphere()
         : radius_(0.0f) {}
-    Sphere(const vec3& center, float radius)
+    Sphere(const vec3& center, float radius, Material* material)
         : center_(center)
         , radius_(radius)
+        , material_(material)
     {
     }
 
@@ -31,6 +33,7 @@ public:
                 info.t = temp;
                 info.point = r.pointAt(info.t);
                 info.normal = (info.point - center_) / radius_;
+                info.material = material_;
                 return true;
             }
 
@@ -40,6 +43,7 @@ public:
                 info.t = temp;
                 info.point = r.pointAt(info.t);
                 info.normal = (info.point - center_) / radius_;
+                info.material = material_;
                 return true;
             }
         }
