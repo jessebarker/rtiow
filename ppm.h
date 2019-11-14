@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 
 class PPMImage
@@ -11,13 +12,13 @@ public:
         : width_(width)
         , height_(height)
         , maxColor_(maxColor) {}
-    void EmitHeader()
+    void emitHeader()
     {
         std::cout << "P3" << std::endl;
         std::cout << width_ << " " << height_ << std::endl;
         std::cout << maxColor_ << std::endl;
     }
-    void EmitOneColor(unsigned int red, unsigned int green, unsigned int blue)
+    void emitOneColor(unsigned int red, unsigned int green, unsigned int blue)
     {
         std::cout << red << " " << green << " " << blue << std::endl;
     }

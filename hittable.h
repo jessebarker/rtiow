@@ -1,10 +1,13 @@
 #pragma once
 
+class Material;
+
 struct HitInfo
 {
     float t;
     vec3 point;
     vec3 normal;
+    Material* material;
 };
 
 class Hittable
