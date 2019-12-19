@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f));
     list[4] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f));
     Hittable* world = new HittableList(list, numHittables);
-    Camera camera;
+    Camera camera(vec3(-2.0f, 2.0f, 1.0f), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f), 20.0f, float(width) / float(height));
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
