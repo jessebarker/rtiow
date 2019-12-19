@@ -3,6 +3,7 @@
 #include "sphere.h"
 #include "lambertian.h"
 #include "metal.h"
+#include "dielectric.h"
 
 namespace
 {
@@ -51,12 +52,14 @@ int main(int argc, char** argv)
     PPMImage ppm(width, height, maxUIColor);
     ppm.emitHeader();
 
-    Hittable* list[4];
-    list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.8f, 0.3f, 0.3f)));
+    const unsigned int numHittables(5);
+    Hittable* list[numHittables];
+    list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.1f, 0.2f, 0.5f)));
     list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(vec3(0.8f, 0.8f, 0.0f)));
-    list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(vec3(0.8f, 0.6f, 0.2f), 1.0f));
-    list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new Metal(vec3(0.8f, 0.8f, 0.8f), 0.3f));
-    Hittable* world = new HittableList(list, 4);
+    list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(vec3(0.8f, 0.6f, 0.2f), 0.2f));
+    list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f));
+    list[4] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f));
+    Hittable* world = new HittableList(list, numHittables);
     Camera camera;
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
