@@ -41,6 +41,47 @@ void applyGamma(vec3& linearColor)
 
 } // namespace
 
+Hittable* createWorld()
+{
+    int n = 500;
+    Hittable** list = new Hittable*[n+1];
+    list[0] = new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(vec3(0.5f, 0.5f, 0.5f)));
+    int i = 1;
+    for (int a = -11; a < 11; a++)
+    {
+        for (int b = -11; b < 11; b++)
+        {
+            float randMat = rg.getZeroToOne();
+            vec3 center(a + 0.9f * rg.getZeroToOne(), 0.2f, b + 0.9f * rg.getZeroToOne());
+            if ((center - vec3(4.0f, 0.2f, 0.0f)).length() > 0.9f)
+            {
+                if (randMat < 0.8f) // diffuse
+                {
+                    list[i++] = new Sphere(center, 0.2f, new Lambertian(vec3(rg.getZeroToOne() * rg.getZeroToOne(),
+                                                                             rg.getZeroToOne() * rg.getZeroToOne(),
+                                                                             rg.getZeroToOne() * rg.getZeroToOne())));
+                }
+                else if (randMat < 0.95f) // metal
+                {
+                    list[i++] = new Sphere(center, 0.2,
+                        new Metal(vec3(0.5f * (1.0f + rg.getZeroToOne()), 0.5f * (1.0f + rg.getZeroToOne()), 0.5f * (1.0f + rg.getZeroToOne())),
+                            0.5f * rg.getZeroToOne()));
+                }
+                else // glass
+                {
+                    list[i++] = new Sphere(center, 0.2f, new Dielectric(1.5f));
+                }
+            }
+        }
+    }
+
+    list[i++] = new Sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new Dielectric(1.5f));
+    list[i++] = new Sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(vec3(0.4f, 0.2f, 0.1f)));
+    list[i++] = new Sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new Metal(vec3(0.7f, 0.6f, 0.5f), 0.0f));
+
+    return new HittableList(list, i);
+}
+
 int main(int argc, char** argv)
 {
     const unsigned int width(200);
@@ -52,19 +93,12 @@ int main(int argc, char** argv)
     PPMImage ppm(width, height, maxUIColor);
     ppm.emitHeader();
 
-    const unsigned int numHittables(5);
-    Hittable* list[numHittables];
-    list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.1f, 0.2f, 0.5f)));
-    list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(vec3(0.8f, 0.8f, 0.0f)));
-    list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(vec3(0.8f, 0.6f, 0.2f), 0.2f));
-    list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f));
-    list[4] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f));
-    Hittable* world = new HittableList(list, numHittables);
-    vec3 lookFrom(3.0f, 3.0f, 2.0f);
+    Hittable* world = createWorld();//new HittableList(list, numHittables);
+    vec3 lookFrom(13.0f, 2.0f, 3.0f);
     vec3 lookAt(0.0f, 0.0f, -1.0f);
     vec3 vUp(0.0f, 1.0f, 0.0f);
     float distToFocus = (lookFrom - lookAt).length();
-    float aperture(2.0f);
+    float aperture(0.0f);
     Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus);
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
