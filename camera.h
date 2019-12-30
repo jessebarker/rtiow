@@ -21,12 +21,17 @@ class Camera
     vec3 u_;
     vec3 v_;
     vec3 w_;
+    float time0_;
+    float time1_;
     float lensRadius_;
     RandomGenerator rg_;
 public:
     Camera(vec3 lookFrom, vec3 lookAt, vec3 vUp, float vFov, // vFov is top to bottom in degrees
-           float aspect, float aperture, float focusDistance) 
+           float aspect, float aperture, float focusDistance,
+           float t0, float t1) 
         : origin_(lookFrom)
+        , time0_(t0)
+        , time1_(t1)
         , lensRadius_(aperture / 2.0f)
     {
         float theta = vFov * M_PI / 180.0f;
@@ -45,6 +50,7 @@ public:
     {
         vec3 rd = lensRadius_ * randomInUnitDisc();
         vec3 offset = u_ * rd.x() + v_ * rd.y();
-        return Ray(origin_ + offset, lowerLeft_ + u * horizontal_ + v * vertical_ - origin_ - offset);
+        float time = time0_ + rg_.getZeroToOne() * (time1_ - time0_);
+        return Ray(origin_ + offset, lowerLeft_ + u * horizontal_ + v * vertical_ - origin_ - offset, time);
     }
 };

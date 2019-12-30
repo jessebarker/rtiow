@@ -13,7 +13,7 @@ public:
     virtual bool scatter(const Ray& ray, const HitInfo& info, vec3& attenuation, Ray& scattered) const
     {
         vec3 target = info.point + info.normal + rg_.getPointInUnitSphere();
-        scattered = Ray(info.point, target - info.point);
+        scattered = Ray(info.point, target - info.point, ray.time());
         attenuation = albedo_;
         return true; 
     }
