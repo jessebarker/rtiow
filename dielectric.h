@@ -60,11 +60,11 @@ public:
 
         if (rg_.getZeroToOne() < reflectP)
         {
-            scattered = Ray(info.point, reflected);
+            scattered = Ray(info.point, reflected, r.time());
         }
         else
         {
-            scattered = Ray(info.point, refracted);
+            scattered = Ray(info.point, refracted, r.time());
         }
 
         return true;

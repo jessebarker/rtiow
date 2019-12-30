@@ -21,7 +21,7 @@ public:
         vec3 direction = ray.direction();
         direction.normalize();
         vec3 reflected = reflect(direction, info.normal);
-        scattered = Ray(info.point, reflected + fuzz_ * rg_.getPointInUnitSphere());
+        scattered = Ray(info.point, reflected + fuzz_ * rg_.getPointInUnitSphere(), ray.time());
         attenuation = albedo_;
         return (vec3::dot(scattered.direction(), info.normal) > 0);
     }

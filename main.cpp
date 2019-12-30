@@ -57,9 +57,10 @@ Hittable* createWorld()
             {
                 if (randMat < 0.8f) // diffuse
                 {
-                    list[i++] = new Sphere(center, 0.2f, new Lambertian(vec3(rg.getZeroToOne() * rg.getZeroToOne(),
-                                                                             rg.getZeroToOne() * rg.getZeroToOne(),
-                                                                             rg.getZeroToOne() * rg.getZeroToOne())));
+                    list[i++] = new Sphere(center, center + vec3(0.0f, 0.5f * rg.getZeroToOne(), 0.0f),
+                        0.0f, 1.0f, 0.2f, new Lambertian(vec3(rg.getZeroToOne() * rg.getZeroToOne(),
+                                                              rg.getZeroToOne() * rg.getZeroToOne(),
+                                                              rg.getZeroToOne() * rg.getZeroToOne())));
                 }
                 else if (randMat < 0.95f) // metal
                 {
@@ -84,11 +85,11 @@ Hittable* createWorld()
 
 int main(int argc, char** argv)
 {
-    const unsigned int width(200);
-    const unsigned int height(100);
+    const unsigned int width(800);
+    const unsigned int height(400);
     const unsigned int maxUIColor(255);
     const float maxColor(255.99f);
-    const unsigned int numSamples(100);
+    const unsigned int numSamples(400);
 
     PPMImage ppm(width, height, maxUIColor);
     ppm.emitHeader();
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
     vec3 vUp(0.0f, 1.0f, 0.0f);
     float distToFocus = (lookFrom - lookAt).length();
     float aperture(0.0f);
-    Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus);
+    Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
