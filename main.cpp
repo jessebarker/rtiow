@@ -9,10 +9,10 @@ namespace
 {
 RandomGenerator rg;
 
-vec3 colorAt(const Ray& r, const Hittable* world, int depth)
+vec3 colorAt(const Ray& r, const Hittable& world, int depth)
 {
     HitInfo info;
-    if (world->hit(r, 0.001f, MAXFLOAT, info))
+    if (world.hit(r, 0.001f, MAXFLOAT, info))
     {
         Ray scattered;
         vec3 attenuation;
@@ -41,12 +41,9 @@ void applyGamma(vec3& linearColor)
 
 } // namespace
 
-Hittable* createWorld()
+void createRandomScene(HittableSet& set)
 {
-    int n = 500;
-    Hittable** list = new Hittable*[n+1];
-    list[0] = new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(vec3(0.5f, 0.5f, 0.5f)));
-    int i = 1;
+    set.add(new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(vec3(0.5f, 0.5f, 0.5f))));
     for (int a = -11; a < 11; a++)
     {
         for (int b = -11; b < 11; b++)
@@ -57,30 +54,28 @@ Hittable* createWorld()
             {
                 if (randMat < 0.8f) // diffuse
                 {
-                    list[i++] = new Sphere(center, center + vec3(0.0f, 0.5f * rg.getZeroToOne(), 0.0f),
+                    set.add(new Sphere(center, center + vec3(0.0f, 0.5f * rg.getZeroToOne(), 0.0f),
                         0.0f, 1.0f, 0.2f, new Lambertian(vec3(rg.getZeroToOne() * rg.getZeroToOne(),
                                                               rg.getZeroToOne() * rg.getZeroToOne(),
-                                                              rg.getZeroToOne() * rg.getZeroToOne())));
+                                                              rg.getZeroToOne() * rg.getZeroToOne()))));
                 }
                 else if (randMat < 0.95f) // metal
                 {
-                    list[i++] = new Sphere(center, 0.2,
+                    set.add(new Sphere(center, 0.2,
                         new Metal(vec3(0.5f * (1.0f + rg.getZeroToOne()), 0.5f * (1.0f + rg.getZeroToOne()), 0.5f * (1.0f + rg.getZeroToOne())),
-                            0.5f * rg.getZeroToOne()));
+                            0.5f * rg.getZeroToOne())));
                 }
                 else // glass
                 {
-                    list[i++] = new Sphere(center, 0.2f, new Dielectric(1.5f));
+                    set.add(new Sphere(center, 0.2f, new Dielectric(1.5f)));
                 }
             }
         }
     }
 
-    list[i++] = new Sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new Dielectric(1.5f));
-    list[i++] = new Sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(vec3(0.4f, 0.2f, 0.1f)));
-    list[i++] = new Sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new Metal(vec3(0.7f, 0.6f, 0.5f), 0.0f));
-
-    return new HittableList(list, i);
+    set.add(new Sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new Dielectric(1.5f)));
+    set.add(new Sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(vec3(0.4f, 0.2f, 0.1f))));
+    set.add(new Sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new Metal(vec3(0.7f, 0.6f, 0.5f), 0.0f)));
 }
 
 int main(int argc, char** argv)
@@ -94,13 +89,14 @@ int main(int argc, char** argv)
     PPMImage ppm(width, height, maxUIColor);
     ppm.emitHeader();
 
-    Hittable* world = createWorld();//new HittableList(list, numHittables);
     vec3 lookFrom(13.0f, 2.0f, 3.0f);
     vec3 lookAt(0.0f, 0.0f, -1.0f);
     vec3 vUp(0.0f, 1.0f, 0.0f);
     float distToFocus = (lookFrom - lookAt).length();
     float aperture(0.0f);
     Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
+    HittableSet set;
+    createRandomScene(set);
 
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
@@ -113,7 +109,7 @@ int main(int argc, char** argv)
                 float u = float(x + rg.getZeroToOne()) / float(width);
                 Ray r = camera.getRay(u, v);
                 vec3 point = r.pointAt(2.0f);
-                color += colorAt(r, world, 0);
+                color += colorAt(r, set, 0);
             }
             color /= float(numSamples);
             applyGamma(color);

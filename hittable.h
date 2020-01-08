@@ -16,22 +16,24 @@ public:
     virtual bool hit(const Ray& r, float tMin, float tMax, HitInfo& info) const = 0;
 };
 
-class HittableList : public Hittable
+class HittableSet : public Hittable
 {
-    Hittable** list_;
-    unsigned int size_;
+    std::vector<Hittable*> hittables_;
 public:
-    HittableList() : list_(nullptr), size_(0) {}
-    HittableList(Hittable** list, unsigned int nElements) : list_(list), size_(nElements) {}
+    HittableSet() {}
+    void add(Hittable* hittable)
+    {
+        hittables_.push_back(hittable);
+    }
     bool hit(const Ray& r, float tMin, float tMax, HitInfo& info) const
     {
         HitInfo tempInfo;
         bool hitAnything(false);
         double closestHit(tMax);
 
-        for (unsigned int i = 0; i < size_; i++)
+        for (auto hittable : hittables_)
         {
-            if (list_[i]->hit(r, tMin, closestHit, tempInfo))
+            if (hittable->hit(r, tMin, closestHit, tempInfo))
             {
                 hitAnything = true;
                 closestHit = tempInfo.t;
