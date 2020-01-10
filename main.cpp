@@ -86,9 +86,6 @@ int main(int argc, char** argv)
     const float maxColor(255.99f);
     const unsigned int numSamples(400);
 
-    PPMImage ppm(width, height, maxUIColor);
-    ppm.emitHeader();
-
     vec3 lookFrom(13.0f, 2.0f, 3.0f);
     vec3 lookAt(0.0f, 0.0f, -1.0f);
     vec3 vUp(0.0f, 1.0f, 0.0f);
@@ -98,6 +95,8 @@ int main(int argc, char** argv)
     HittableSet set;
     createRandomScene(set);
 
+    std::vector<uvec3> imageData;
+    imageData.reserve(width * height);
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
         for (unsigned int x = 0; x < width; x++)
@@ -116,7 +115,14 @@ int main(int argc, char** argv)
             unsigned int ur = static_cast<unsigned int>(maxColor * color.x());
             unsigned int ug = static_cast<unsigned int>(maxColor * color.y());
             unsigned int ub = static_cast<unsigned int>(maxColor * color.z());
-            ppm.emitOneColor(ur, ug, ub);
+            imageData.push_back(uvec3(ur, ug, ub));
         }
+    }
+
+    PPMImage ppm(width, height, maxUIColor);
+    ppm.emitHeader();
+    for (auto pixel : imageData)
+    {
+        ppm.emitOneColor(pixel.x(), pixel.y(), pixel.z());
     }
 }
