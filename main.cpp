@@ -1,3 +1,6 @@
+// Uncomment this to validate that all objects were successfully
+// sorted into the BVH
+//#define DEBUG_BVH_SORT
 #include "ppm.h"
 #include "camera.h"
 #include "sphere.h"
@@ -9,7 +12,7 @@ namespace
 {
 RandomGenerator rg;
 
-vec3 colorAt(const Ray& r, const Hittable& world, int depth)
+vec3 colorAt(const Ray& r, const Hittable& world, int depth = 0)
 {
     HitInfo info;
     if (world.hit(r, 0.001f, MAXFLOAT, info))
@@ -80,11 +83,11 @@ void createRandomScene(HittableSet& set)
 
 int main(int argc, char** argv)
 {
-    const unsigned int width(800);
-    const unsigned int height(400);
+    const unsigned int width(200);
+    const unsigned int height(100);
     const unsigned int maxUIColor(255);
     const float maxColor(255.99f);
-    const unsigned int numSamples(400);
+    const unsigned int numSamples(100);
 
     vec3 lookFrom(13.0f, 2.0f, 3.0f);
     vec3 lookAt(0.0f, 0.0f, -1.0f);
@@ -94,7 +97,14 @@ int main(int argc, char** argv)
     Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
     HittableSet set;
     createRandomScene(set);
-
+    set.sortMe(0.0f, 1.0f);
+#ifdef DEBUG_BVH_SORT
+    if (set.anyoneLeftBehind())
+    {
+        std::cerr << "rtiow: not all objects were sorted properly" << std::endl;
+        return 1;
+    }
+#endif
     std::vector<uvec3> imageData;
     imageData.reserve(width * height);
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
@@ -107,8 +117,7 @@ int main(int argc, char** argv)
                 float v = float(y + rg.getZeroToOne()) / float(height);
                 float u = float(x + rg.getZeroToOne()) / float(width);
                 Ray r = camera.getRay(u, v);
-                vec3 point = r.pointAt(2.0f);
-                color += colorAt(r, set, 0);
+                color += colorAt(r, set);
             }
             color /= float(numSamples);
             applyGamma(color);
