@@ -47,7 +47,7 @@ public:
     // Allow raw data access for API calls and the like.
     // For example, it is valid to pass a tvec2<float> into a call to
     // the OpenGL command "glUniform2fv()".
-    operator const T*() const { return &x_;}
+    // operator const T*() const { return &x_;}
 
     // Get and set access members for the individual elements.
     const T x() const { return x_; }
@@ -248,7 +248,7 @@ public:
     // Allow raw data access for API calls and the like.
     // For example, it is valid to pass a tvec3<float> into a call to
     // the OpenGL command "glUniform3fv()".
-    operator const T*() const { return &x_;}
+    // operator const T*() const { return &x_;}
 
     // Get and set access members for the individual elements.
     const T x() const { return x_; }
@@ -259,7 +259,7 @@ public:
     void y(const T& val) { y_ = val; }
     void z(const T& val) { z_ = val; }
 
-    T operator[](const unsigned int i)
+    T operator[](const unsigned int i) const
     {
         switch(i)
         {
@@ -489,7 +489,7 @@ public:
     // Allow raw data access for API calls and the like.
     // For example, it is valid to pass a tvec4<float> into a call to
     // the OpenGL command "glUniform4fv()".
-    operator const T*() const { return &x_;}
+    // operator const T*() const { return &x_;}
 
     // Get and set access members for the individual elements.
     const T x() const { return x_; }

@@ -31,7 +31,7 @@ public:
     {
 #define USE_BOOK_METHODS
 #ifdef USE_BOOK_METHODS
-        for (unsigned int a = 0; a < 3; a++)
+        for (unsigned int a = 1; a < 4; a++)
         {
 #define PIXAR_OPT
 #ifdef PIXAR_OPT
