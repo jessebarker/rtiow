@@ -211,7 +211,7 @@ public:
             AABB hittableBounds = hittable->getBounds(time0, time1);
             vec3 hittableCenter = (hittableBounds.min() + hittableBounds.max()) * 0.5f;
             float hca = hittableCenter[axis];
-            BvhNode* which = (hc < nc) ? root->left_ : root->right_;
+            BvhNode* which = (hca < nca) ? root->left_ : root->right_;
             which->add(time0, time1, hittable);
         }
 
