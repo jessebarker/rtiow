@@ -73,9 +73,19 @@ public:
     }
     AABB getBounds(float time0, float time1) const
     {
-        float time(time1 - time0);
-        vec3 centerAt(time);
+        vec3 center0(center(time0));
+        vec3 center1(center(time1));
         vec3 radius(radius_, radius_, radius_);
-        return AABB(centerAt - radius, centerAt + radius);
+        AABB box0(center0 - radius, center0 + radius);
+        AABB box1(center1 - radius, center1 + radius);
+        AABB box(surroundingBox(box0, box1));
+        if(0)printf("{%f, %f, %f} , {%f, %f, %f}\n",
+            box.min()[0],
+            box.min()[1],
+            box.min()[2],
+            box.max()[0],
+            box.max()[1],
+            box.max()[2]);
+        return box;
     }
 };
