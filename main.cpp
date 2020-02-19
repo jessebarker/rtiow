@@ -46,7 +46,8 @@ void applyGamma(vec3& linearColor)
 
 void createRandomScene(HittableSet& set)
 {
-    set.add(new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(vec3(0.5f, 0.5f, 0.5f))));
+    Texture* checker = new CheckerTexture(new ConstantTexture(vec3(0.2f, 0.3f, 0.1f)), new ConstantTexture(vec3(0.9f)));
+    set.add(new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(checker)));
     for (int a = -11; a < 11; a++)
     {
         for (int b = -11; b < 11; b++)
@@ -58,9 +59,9 @@ void createRandomScene(HittableSet& set)
                 if (randMat < 0.8f) // diffuse
                 {
                     set.add(new Sphere(center, center + vec3(0.0f, 0.5f * rg.getZeroToOne(), 0.0f),
-                        0.0f, 1.0f, 0.2f, new Lambertian(vec3(rg.getZeroToOne() * rg.getZeroToOne(),
-                                                              rg.getZeroToOne() * rg.getZeroToOne(),
-                                                              rg.getZeroToOne() * rg.getZeroToOne()))));
+                        0.0f, 1.0f, 0.2f, new Lambertian(new ConstantTexture(vec3(rg.getZeroToOne() * rg.getZeroToOne(),
+                                                                                  rg.getZeroToOne() * rg.getZeroToOne(),
+                                                                                  rg.getZeroToOne() * rg.getZeroToOne())))));
                 }
                 else if (randMat < 0.95f) // metal
                 {
@@ -77,26 +78,34 @@ void createRandomScene(HittableSet& set)
     }
 
     set.add(new Sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new Dielectric(1.5f)));
-    set.add(new Sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(vec3(0.4f, 0.2f, 0.1f))));
+    set.add(new Sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new Lambertian(new ConstantTexture(vec3(0.4f, 0.2f, 0.1f)))));
     set.add(new Sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new Metal(vec3(0.7f, 0.6f, 0.5f), 0.0f)));
+}
+
+void createTwoSpheresScene(HittableSet& set)
+{
+    Texture* checker = new CheckerTexture(new ConstantTexture(vec3(0.2f, 0.3f, 0.1f)), new ConstantTexture(vec3(0.9f)));
+    set.add(new Sphere(vec3(0.0f, -10.0f, 0.0f), 10.0f, new Lambertian(checker)));
+    set.add(new Sphere(vec3(0.0f, 10.0f, 0.0f), 10.0f, new Lambertian(checker)));
 }
 
 int main(int argc, char** argv)
 {
-    const unsigned int width(800);
-    const unsigned int height(400);
+    const unsigned int width(400);
+    const unsigned int height(200);
     const unsigned int maxUIColor(255);
     const float maxColor(255.99f);
-    const unsigned int numSamples(400);
+    const unsigned int numSamples(100);
 
     vec3 lookFrom(13.0f, 2.0f, 3.0f);
-    vec3 lookAt(0.0f, 0.0f, -1.0f);
+    vec3 lookAt(0.0f, 0.0f, 0.0f);
     vec3 vUp(0.0f, 1.0f, 0.0f);
     float distToFocus = (lookFrom - lookAt).length();
     float aperture(0.0f);
     Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
     HittableSet set;
     createRandomScene(set);
+    //createTwoSpheresScene(set);
     set.sortMe(0.0f, 1.0f);
 #ifdef DEBUG_BVH_SORT
     if (set.anyoneLeftBehind())

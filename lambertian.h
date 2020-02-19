@@ -1,12 +1,14 @@
 #pragma once
 
 #include "material.h"
+#include "texture.h"
 
 class Lambertian : public Material
 {
-    vec3 albedo_;
+    Texture* albedo_;
 public:
-    Lambertian(const vec3& albedo)
+    Lambertian() = delete;
+    Lambertian(Texture* albedo)
         : albedo_(albedo)
     {
     }
@@ -14,7 +16,7 @@ public:
     {
         vec3 target = info.point + info.normal + rg_.getPointInUnitSphere();
         scattered = Ray(info.point, target - info.point, ray.time());
-        attenuation = albedo_;
+        attenuation = albedo_->value(0.0f, 0.0f, info.point);
         return true; 
     }
 };
