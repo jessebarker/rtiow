@@ -83,11 +83,11 @@ void createRandomScene(HittableSet& set)
 
 int main(int argc, char** argv)
 {
-    const unsigned int width(200);
-    const unsigned int height(100);
+    const unsigned int width(800);
+    const unsigned int height(400);
     const unsigned int maxUIColor(255);
     const float maxColor(255.99f);
-    const unsigned int numSamples(100);
+    const unsigned int numSamples(400);
 
     vec3 lookFrom(13.0f, 2.0f, 3.0f);
     vec3 lookAt(0.0f, 0.0f, -1.0f);

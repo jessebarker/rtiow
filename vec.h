@@ -259,21 +259,6 @@ public:
     void y(const T& val) { y_ = val; }
     void z(const T& val) { z_ = val; }
 
-    T operator[](const unsigned int i)
-    {
-        switch(i)
-        {
-            case 1:
-                return x();
-            case 2:
-                return y();
-            case 3:
-                return z();
-            default:
-                return x();
-        }
-    }
-
     // A direct assignment of 'rhs' to this.  Return a reference to this.
     tvec3& operator=(const tvec3& rhs)
     {

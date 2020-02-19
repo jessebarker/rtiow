@@ -45,7 +45,6 @@ struct BvhNode
     {
         // If the ray misses us, we're done
         bool gotHit = false;
-        HitInfo closestHit;
         if (!bounds_.hit(r, tMin, tMax))
         {
             return gotHit;
@@ -56,7 +55,8 @@ struct BvhNode
         HitInfo rightHit;
         bool gotLeft = left_ && left_->hit(r, tMin, tMax, leftHit);
         bool gotRight = right_ && right_->hit(r, tMin, tMax, rightHit);
-        // closestHit.t = tMax; // Might this simplify the 'gotHit' logic below?
+        HitInfo closestHit;
+        closestHit.t = tMax;
         if (gotLeft && gotRight)
         {
             closestHit = (leftHit.t < rightHit.t) ? leftHit : rightHit;
@@ -74,23 +74,16 @@ struct BvhNode
         }
 
         // Let's see if the ray hits any of our objects (should this come before the child check?)
-        float tCur = (gotHit) ? closestHit.t : tMax;
         HitInfo currentHit;
         for (auto hittable : hittables_)
         {
-            if (hittable->hit(r, tMin, tCur, currentHit))
+            if (hittable->hit(r, tMin, closestHit.t, currentHit))
             {
-                // If we don't have anything yet, just assign this object's info
-                if (!gotHit)
+                // If we don't have anything yet, or we found a closer hit, assign this object's info
+                if (!gotHit || currentHit.t < closestHit.t)
                 {
                     gotHit = true;
                     closestHit = currentHit;
-                    tCur = currentHit.t;
-                }
-                else if (currentHit.t < closestHit.t) // We had a hit, but this one is closer
-                {
-                    closestHit = currentHit;
-                    tCur = currentHit.t;
                 }
             }
         }
@@ -179,6 +172,8 @@ public:
 #endif // DEBUG_BVH_SORT
         }
 
+        // If the current node has zero hittables, there's no more sorting.
+        // If there's only one, it just lives here.
         if (root->hittables_.empty())
         {
             std::cerr << "HittableSet::sortMe: root node has no hittables" << std::endl;
@@ -192,7 +187,7 @@ public:
         root->left_ = new BvhNode();
         root->right_ = new BvhNode();
 
-        // Pick an axis
+        // Pick the axis with the smallest difference
         unsigned int axis = 0;
         const AABB& nodeBounds = root->bounds_;
         vec3 nodeDims = nodeBounds.max() - nodeBounds.min();
@@ -205,18 +200,19 @@ public:
         }
 
         // Add this node's hittables to left or right child as appropriate
-        float nca = nodeBounds.min()[axis] + nodeDims[axis] / 2.0f;
+        const vec3& nodeCenter = (nodeBounds.min() + nodeBounds.max()) * 0.5f;
+        float nca = nodeCenter[axis];
         for (auto hittable : root->hittables_)
         {
             AABB hittableBounds = hittable->getBounds(time0, time1);
             vec3 hittableCenter = (hittableBounds.min() + hittableBounds.max()) * 0.5f;
             float hca = hittableCenter[axis];
-            BvhNode* which = (hc < nc) ? root->left_ : root->right_;
+            BvhNode* which = (hca < nca) ? root->left_ : root->right_;
             which->add(time0, time1, hittable);
         }
 
         // If either child has no hittables, then 'root' is the leaf on this branch
-        // Destroy the children and get out.
+        // Clean up the children and get out.
         bool leftEmpty = root->left_->hittables_.empty();
         bool rightEmpty = root->right_->hittables_.empty();
         if (leftEmpty || rightEmpty)
