@@ -15,7 +15,6 @@ class Sphere : public Hittable
     {
         return center0_ + ((time - time0_) / (time1_ - time0_)) * (center1_ - center0_);
     }
-
 public:
     // Initialize a static sphere
     Sphere(const vec3& center, float radius, Material* material)
@@ -38,10 +37,10 @@ public:
         , material_(material)
     {
     }
-
     bool hit(const Ray& r, float tMin, float tMax, HitInfo& info) const
     {
-        vec3 oc = r.origin() - center(r.time());
+        vec3 centerAt = center(r.time());
+        vec3 oc = r.origin() - centerAt;
         float a = vec3::dot(r.direction(), r.direction());
         float b = vec3::dot(oc, r.direction());
         float c = vec3::dot(oc, oc) - radius_ * radius_;
@@ -54,7 +53,7 @@ public:
             {
                 info.t = temp;
                 info.point = r.pointAt(info.t);
-                info.normal = (info.point - center(r.time())) / radius_;
+                info.normal = (info.point - centerAt) / radius_;
                 info.material = material_;
                 return true;
             }
@@ -64,12 +63,21 @@ public:
             {
                 info.t = temp;
                 info.point = r.pointAt(info.t);
-                info.normal = (info.point - center(r.time())) / radius_;
+                info.normal = (info.point - centerAt) / radius_;
                 info.material = material_;
                 return true;
             }
         }
 
         return false;
+    }
+    AABB getBounds(float time0, float time1) const
+    {
+        vec3 centerAt0 = center(time0);
+        vec3 centerAt1 = center(time1);
+        vec3 radius(radius_);
+        AABB box0(centerAt0 - radius, centerAt0 + radius);
+        AABB box1(centerAt1 - radius, centerAt1 + radius);
+        return surroundingBox(box0, box1);
     }
 };
