@@ -89,6 +89,13 @@ void createTwoSpheresScene(HittableSet& set)
     set.add(new Sphere(vec3(0.0f, 10.0f, 0.0f), 10.0f, new Lambertian(checker)));
 }
 
+void createPerlinSpheres(HittableSet& set)
+{
+    Texture* noise = new NoiseTexture(2.0f);
+    set.add(new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(noise)));
+    set.add(new Sphere(vec3(0.0f, 2.0f, 0.0f), 2.0f, new Lambertian(noise)));
+}
+
 int main(int argc, char** argv)
 {
     const unsigned int width(400);
@@ -104,8 +111,9 @@ int main(int argc, char** argv)
     float aperture(0.0f);
     Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
     HittableSet set;
-    createRandomScene(set);
+    //createRandomScene(set);
     //createTwoSpheresScene(set);
+    createPerlinSpheres(set);
     set.sortMe(0.0f, 1.0f);
 #ifdef DEBUG_BVH_SORT
     if (set.anyoneLeftBehind())
