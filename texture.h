@@ -1,5 +1,7 @@
 #pragma once
 
+#include "perlin.h"
+
 class Texture
 {
 public:
@@ -39,5 +41,21 @@ public:
             return odd_->value(u, v, point);
         }
         return even_->value(u, v, point);
+    }
+};
+
+class NoiseTexture : public Texture
+{
+    Perlin perlin_;
+public:
+    NoiseTexture(float scale = 1.0f)
+        : perlin_(scale)
+    {
+    }
+    virtual vec3 value(float u, float v, const vec3& point) const
+    {
+        //return vec3(1.0f) * perlin_.noise(point);
+        //return vec3(1.0f) * 0.5f * (1.0f + sin(perlin_.scale() * point.z() + 10.0f * perlin_.turbulence(point)));
+        return vec3(1.0f) * 0.5f * (1.0f + sin(perlin_.scale() * point.z() + 10.0f * perlin_.turbulence(point * (1.0f / perlin_.scale()))));
     }
 };
