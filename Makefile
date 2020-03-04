@@ -1,14 +1,17 @@
-CXXFLAGS = -Wall -Werror -std=c++17 -pedantic -g
+CXXFLAGS = -Wall -Werror -std=c++11 -pedantic -g
 RTTARGET = rtiow
 RTSRCS = main.cpp
 RTOBJS = $(LIBSRCS:.cpp=.o)
 
-# Make sure to build both the library targets and the tests, and generate 
-# a make failure if the tests don't pass.
 default: $(RTTARGET)
 
-$(RTTARGET): $(RTSRCS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+image.o: image.cpp image.h
+	$(CXX) $(CXXFLAGS) -I stb -c image.cpp
+
+RTHEADERS := $(wildcard *.h) 
+
+$(RTTARGET): $(RTSRCS) $(RTHEADERS) image.o
+	$(CXX) $(CXXFLAGS) image.o -o $@ $(RTSRCS)
 
 clean :
 	$(RM) $(RTOBJS) $(RTTARGET)
