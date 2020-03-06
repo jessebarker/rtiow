@@ -1,7 +1,7 @@
 // Uncomment this to validate that all objects were successfully
 // sorted into the BVH
 //#define DEBUG_BVH_SORT
-#include "ppm.h"
+#include <cfloat>
 #include "camera.h"
 #include "sphere.h"
 #include "lambertian.h"
@@ -15,7 +15,7 @@ RandomGenerator rg;
 vec3 colorAt(const Ray& r, const Hittable& world, int depth = 0)
 {
     HitInfo info;
-    if (world.hit(r, 0.001f, MAXFLOAT, info))
+    if (world.hit(r, 0.001f, FLT_MAX, info))
     {
         Ray scattered;
         vec3 attenuation;
@@ -89,6 +89,11 @@ void createTwoSpheresScene(HittableSet& set)
     set.add(new Sphere(vec3(0.0f, 10.0f, 0.0f), 10.0f, new Lambertian(checker)));
 }
 
+void createEarthScene(HittableSet& set)
+{
+    set.add(new Sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, new Lambertian(new ImageTexture("earthmap.jpg"))));
+}
+
 void createPerlinSpheres(HittableSet& set)
 {
     Texture* noise = new NoiseTexture(2.0f);
@@ -100,7 +105,6 @@ int main(int argc, char** argv)
 {
     const unsigned int width(400);
     const unsigned int height(200);
-    const unsigned int maxUIColor(255);
     const float maxColor(255.99f);
     const unsigned int numSamples(100);
 
@@ -113,7 +117,8 @@ int main(int argc, char** argv)
     HittableSet set;
     //createRandomScene(set);
     //createTwoSpheresScene(set);
-    createPerlinSpheres(set);
+    //createPerlinSpheres(set);
+    createEarthScene(set);
     set.sortMe(0.0f, 1.0f);
 #ifdef DEBUG_BVH_SORT
     if (set.anyoneLeftBehind())
@@ -122,7 +127,8 @@ int main(int argc, char** argv)
         return 1;
     }
 #endif
-    std::vector<uvec3> imageData;
+    typedef tvec3<unsigned char> ucvec3;
+    std::vector<ucvec3> imageData;
     imageData.reserve(width * height);
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
@@ -141,14 +147,17 @@ int main(int argc, char** argv)
             unsigned int ur = static_cast<unsigned int>(maxColor * color.x());
             unsigned int ug = static_cast<unsigned int>(maxColor * color.y());
             unsigned int ub = static_cast<unsigned int>(maxColor * color.z());
-            imageData.push_back(uvec3(ur, ug, ub));
+            imageData.push_back(ucvec3(ur, ug, ub));
         }
     }
 
-    PPMImage ppm(width, height, maxUIColor);
-    ppm.emitHeader();
-    for (auto pixel : imageData)
+    Image image;
+    bool didIt = image.store("output.png", width, height, 3, reinterpret_cast<unsigned char*>(imageData.data()));
+    if (!didIt)
     {
-        ppm.emitOneColor(pixel.x(), pixel.y(), pixel.z());
+        std::cerr << "Failed to store the output image" << std::endl;
+        return 1;
     }
+
+    return 0;
 }

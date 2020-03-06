@@ -9,6 +9,7 @@ struct HitInfo
     float t;
     vec3 point;
     vec3 normal;
+    vec2 uv;
     Material* material;
 };
 

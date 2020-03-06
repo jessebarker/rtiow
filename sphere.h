@@ -15,6 +15,15 @@ class Sphere : public Hittable
     {
         return center0_ + ((time - time0_) / (time1_ - time0_)) * (center1_ - center0_);
     }
+    vec2 uvAtPoint(const vec3& point) const
+    {
+        float phi = atan2(point.z(), point.x());
+        float theta = asin(point.y());
+        vec2 uv;
+        uv.x(1.0f - (phi + M_PI) / (2.0f * M_PI));
+        uv.y((theta + M_PI / 2.0f) / M_PI);
+        return uv;
+    }
 public:
     // Initialize a static sphere
     Sphere(const vec3& center, float radius, Material* material)
@@ -54,6 +63,7 @@ public:
                 info.t = temp;
                 info.point = r.pointAt(info.t);
                 info.normal = (info.point - centerAt) / radius_;
+                info.uv = uvAtPoint(info.normal);
                 info.material = material_;
                 return true;
             }
@@ -64,6 +74,7 @@ public:
                 info.t = temp;
                 info.point = r.pointAt(info.t);
                 info.normal = (info.point - centerAt) / radius_;
+                info.uv = uvAtPoint(info.normal);
                 info.material = material_;
                 return true;
             }
