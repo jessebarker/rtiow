@@ -1,5 +1,6 @@
 #pragma once
 
+#include "image.h"
 #include "perlin.h"
 
 class Texture
@@ -59,3 +60,28 @@ public:
         return vec3(1.0f) * 0.5f * (1.0f + sin(perlin_.scale() * point.z() + 10.0f * perlin_.turbulence(point * (1.0f / perlin_.scale()))));
     }
 };
+
+class ImageTexture : public Texture
+{
+    Image image_;
+public:
+    ImageTexture()
+    {
+    }
+    ImageTexture(const char* filename)
+    {
+        image_.load(filename);
+    }
+    virtual vec3 value(float u, float v, const vec3& point) const
+    {
+        vec2 dimensions(image_.dimensions().x(), image_.dimensions().y());
+        vec2 uv(u, 1.0f - v);
+        uv *= dimensions;
+        uvec2 xy(uv.x(), uv.y());
+        unsigned char* curPixel = image_.pixels() + (xy.y() * image_.dimensions().x() + xy.x()) * image_.components();
+        vec3 result(curPixel[0], curPixel[1], curPixel[2]);
+        result /= 255.0f;
+        return result;
+    }
+};
+

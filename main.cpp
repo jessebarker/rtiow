@@ -7,7 +7,6 @@
 #include "lambertian.h"
 #include "metal.h"
 #include "dielectric.h"
-#include "image.h"
 
 namespace
 {
@@ -90,6 +89,11 @@ void createTwoSpheresScene(HittableSet& set)
     set.add(new Sphere(vec3(0.0f, 10.0f, 0.0f), 10.0f, new Lambertian(checker)));
 }
 
+void createEarthScene(HittableSet& set)
+{
+    set.add(new Sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, new Lambertian(new ImageTexture("earthmap.jpg"))));
+}
+
 void createPerlinSpheres(HittableSet& set)
 {
     Texture* noise = new NoiseTexture(2.0f);
@@ -113,7 +117,8 @@ int main(int argc, char** argv)
     HittableSet set;
     //createRandomScene(set);
     //createTwoSpheresScene(set);
-    createPerlinSpheres(set);
+    //createPerlinSpheres(set);
+    createEarthScene(set);
     set.sortMe(0.0f, 1.0f);
 #ifdef DEBUG_BVH_SORT
     if (set.anyoneLeftBehind())

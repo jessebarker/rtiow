@@ -1,7 +1,6 @@
 CXXFLAGS = -Wall -Werror -std=c++11 -pedantic -g
 RTTARGET = rtiow
 RTSRCS = main.cpp
-RTOBJS = $(LIBSRCS:.cpp=.o)
 
 default: $(RTTARGET)
 
@@ -14,4 +13,4 @@ $(RTTARGET): $(RTSRCS) $(RTHEADERS) image.o
 	$(CXX) $(CXXFLAGS) image.o -o $@ $(RTSRCS)
 
 clean :
-	$(RM) $(RTOBJS) $(RTTARGET)
+	$(RM) $(RTTARGET) *.o

@@ -16,7 +16,7 @@ public:
     {
         vec3 target = info.point + info.normal + rg_.getPointInUnitSphere();
         scattered = Ray(info.point, target - info.point, ray.time());
-        attenuation = albedo_->value(0.0f, 0.0f, info.point);
+        attenuation = albedo_->value(info.uv.x(), info.uv.y(), info.point);
         return true; 
     }
 };
