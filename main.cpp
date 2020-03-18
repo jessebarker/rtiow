@@ -7,6 +7,8 @@
 #include "lambertian.h"
 #include "metal.h"
 #include "dielectric.h"
+#include "diffuse-light.h"
+#include "rect.h"
 
 namespace
 {
@@ -15,23 +17,18 @@ RandomGenerator rg;
 vec3 colorAt(const Ray& r, const Hittable& world, int depth = 0)
 {
     HitInfo info;
+    vec3 emitted;
     if (world.hit(r, 0.001f, FLT_MAX, info))
     {
         Ray scattered;
         vec3 attenuation;
+        emitted = info.material->emitted(info.uv, info.point);
         if (depth < 50 && info.material->scatter(r, info, attenuation, scattered))
         {
-            return attenuation * colorAt(scattered, world, depth + 1);
+            return emitted + attenuation * colorAt(scattered, world, depth + 1);
         }
-        return vec3(0.0f);
     }
-    else
-    {
-        vec3 direction = r.direction();
-        direction.normalize();
-        float t = 0.5f * (direction.y() + 1.0f);
-        return (1.0f - t) * vec3(1.0) + t * vec3(0.5f, 0.7f, 1.0f);
-    }
+    return emitted;
 }
 
 void applyGamma(vec3& linearColor)
@@ -96,9 +93,19 @@ void createEarthScene(HittableSet& set)
 
 void createPerlinSpheres(HittableSet& set)
 {
-    Texture* noise = new NoiseTexture(2.0f);
+    Texture* noise = new NoiseTexture(4.0f);
     set.add(new Sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new Lambertian(noise)));
     set.add(new Sphere(vec3(0.0f, 2.0f, 0.0f), 2.0f, new Lambertian(noise)));
+}
+
+void createEmissiveScene(HittableSet& set)
+{
+    createPerlinSpheres(set);
+    Texture* light = new ConstantTexture(vec3(4.0f, 4.0f, 4.0f));
+    set.add(new Sphere(vec3(0.0f, 7.0f, 0.0f), 2.0f, new DiffuseLight(light)));
+    vec2 min(3.0f, 1.0f);
+    vec2 max(5.0f, 3.0f);
+    set.add(new Rect(min, max, -2.0f, new DiffuseLight(light)));
 }
 
 int main(int argc, char** argv)
@@ -109,16 +116,17 @@ int main(int argc, char** argv)
     const unsigned int numSamples(100);
 
     vec3 lookFrom(13.0f, 2.0f, 3.0f);
-    vec3 lookAt(0.0f, 0.0f, 0.0f);
+    vec3 lookAt(0.0f, 2.0f, 0.0f);
     vec3 vUp(0.0f, 1.0f, 0.0f);
     float distToFocus = (lookFrom - lookAt).length();
     float aperture(0.0f);
-    Camera camera(lookFrom, lookAt, vUp, 20.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
+    Camera camera(lookFrom, lookAt, vUp, 40.0f, float(width) / float(height), aperture, distToFocus, 0.0f, 1.0f);
     HittableSet set;
     //createRandomScene(set);
     //createTwoSpheresScene(set);
     //createPerlinSpheres(set);
-    createEarthScene(set);
+    //createEarthScene(set);
+    createEmissiveScene(set);
     set.sortMe(0.0f, 1.0f);
 #ifdef DEBUG_BVH_SORT
     if (set.anyoneLeftBehind())
