@@ -20,6 +20,29 @@ public:
     virtual AABB getBounds(float time0, float time1) const = 0;
 };
 
+class FlipNormals : public Hittable
+{
+    Hittable* hittable_;
+public:
+    FlipNormals(Hittable* hittable)
+        : hittable_(hittable)
+    {
+    }
+    virtual bool hit(const Ray& ray, float tMin, float tMax, HitInfo& info) const
+    {
+        if (hittable_->hit(ray, tMin, tMax, info))
+        {
+            info.normal *= -1.0f;
+            return true;
+        }
+        return false;
+    }
+    virtual AABB getBounds(float time0, float time1) const
+    {
+        return hittable_->getBounds(time0, time1);
+    }
+};
+
 struct BvhNode
 {
     std::vector<Hittable*> hittables_;

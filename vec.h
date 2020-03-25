@@ -9,11 +9,9 @@
 // Contributors:
 //     Jesse Barker - original implementation.
 //
-#ifndef VEC_H_
-#define VEC_H_
-
+#pragma once
 #include <iostream> // only needed for print() functions...
-#include <math.h>
+#include <cmath>
 
 // A template class for creating, managing and operating on a 2-element vector
 // of any type you like (intended for built-in types, but as long as it 
@@ -462,6 +460,11 @@ public:
         y_(v.y_),
         z_(v.z_),
         w_(v.w_) {}
+    tvec4(const tvec3<T>& v) :
+        x_(v.x()),
+        y_(v.y()),
+        z_(v.z()),
+        w_(1) {}
     ~tvec4() {}
 
     // Print the elements of the vector to standard out.
@@ -481,6 +484,7 @@ public:
     const T y() const { return y_; }
     const T z() const { return z_; }
     const T w() const { return w_; }
+    const tvec3<T> xyz() const { return tvec3<T>(x_, y_, z_); }
 
     void x(const T& val) { x_ = val; }
     void y(const T& val) { y_ = val; }
@@ -729,4 +733,3 @@ tvec3<T> vmax(const tvec3<T>& v0, const tvec3<T>& v1)
     return result;
 }
 
-#endif // VEC_H_
