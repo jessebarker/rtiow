@@ -8,7 +8,7 @@
 #include "metal.h"
 #include "dielectric.h"
 #include "diffuse-light.h"
-#include "rect.h"
+#include "box.h"
 
 namespace
 {
@@ -137,6 +137,7 @@ void createCornellBox(HittableSet& set, Camera& camera)
     Material* green = new Lambertian(new ConstantTexture(vec3(0.12f, 0.45f, 0.15f)));
     Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f, 4.0f, 4.0f)));
 
+    // The surrounding box itself
     vec2 boxMin(0.0f, 0.0f);
     vec2 boxMax(555.0f, 555.0f);
     vec2 lightMin(213.0f, 227.0f);
@@ -147,6 +148,10 @@ void createCornellBox(HittableSet& set, Camera& camera)
     set.add(new FlipNormals(new RectXZ(boxMin, boxMax, 555.0f, white)));
     set.add(new RectXZ(boxMin, boxMax, 0.0f, white));
     set.add(new FlipNormals(new RectXY(boxMin, boxMax, 555.0f, white)));
+
+    // The blocks inside the box
+    set.add(new Box(vec3(130.0f, 0.0f, 65.0f), vec3(295.0f, 165.0f, 230.0f), white));
+    set.add(new Box(vec3(265.0f, 0.0f, 295.0f), vec3(430.0f, 330.0f, 460.0f), white));
 
     vec3 lookFrom(278.0f, 278.0f, -800.0f);
     vec3 lookAt(278.0f, 278.0f, 0.0f);

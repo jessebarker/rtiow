@@ -257,6 +257,10 @@ public:
     void y(const T& val) { y_ = val; }
     void z(const T& val) { z_ = val; }
 
+    tvec2<T> xy() const { return tvec2<T>(x_, y_); }
+    tvec2<T> yz() const { return tvec2<T>(y_, z_); }
+    tvec2<T> xz() const { return tvec2<T>(x_, z_); }
+
     // A direct assignment of 'rhs' to this.  Return a reference to this.
     tvec3& operator=(const tvec3& rhs)
     {
