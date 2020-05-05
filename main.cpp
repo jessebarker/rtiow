@@ -9,6 +9,7 @@
 #include "dielectric.h"
 #include "diffuse-light.h"
 #include "box.h"
+#include "instance.h"
 
 namespace
 {
@@ -135,7 +136,7 @@ void createCornellBox(HittableSet& set, Camera& camera)
     Material* red = new Lambertian(new ConstantTexture(vec3(0.65f, 0.05f, 0.05f)));
     Material* white = new Lambertian(new ConstantTexture(vec3(0.73f)));
     Material* green = new Lambertian(new ConstantTexture(vec3(0.12f, 0.45f, 0.15f)));
-    Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f, 4.0f, 4.0f)));
+    Material* light = new DiffuseLight(new ConstantTexture(vec3(10.0f, 10.0f, 10.0f)));
 
     // The surrounding box itself
     vec2 boxMin(0.0f, 0.0f);
@@ -150,8 +151,10 @@ void createCornellBox(HittableSet& set, Camera& camera)
     set.add(new FlipNormals(new RectXY(boxMin, boxMax, 555.0f, white)));
 
     // The blocks inside the box
-    set.add(new Box(vec3(130.0f, 0.0f, 65.0f), vec3(295.0f, 165.0f, 230.0f), white));
-    set.add(new Box(vec3(265.0f, 0.0f, 295.0f), vec3(430.0f, 330.0f, 460.0f), white));
+    set.add(new Translate(new RotateY(new Box(vec3(0.0f, 0.0f, 0.0f),
+        vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f)));
+    set.add(new Translate(new RotateY(new Box(vec3(0.0f, 0.0f, 0.0f),
+        vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f)));
 
     vec3 lookFrom(278.0f, 278.0f, -800.0f);
     vec3 lookAt(278.0f, 278.0f, 0.0f);
@@ -170,7 +173,7 @@ int main(int argc, char** argv)
     const unsigned int width(400);
     const unsigned int height(200);
     const float maxColor(255.99f);
-    const unsigned int numSamples(100);
+    const unsigned int numSamples(400);
 
     Camera camera;
     camera.setAspect(float(width) / float(height));
