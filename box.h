@@ -16,12 +16,12 @@ public:
         , max_(p1)
         , material_(material)
     {
-        set_.add(new RectXY(min_.xy(), max_.xy(), max_.z(), material_));
-        set_.add(new FlipNormals(new RectXY(min_.xy(), max_.xy(), min_.z(), material_)));
-        set_.add(new RectXZ(min_.xz(), max_.xz(), max_.y(), material_));
-        set_.add(new FlipNormals(new RectXZ(min_.xz(), max_.xz(), max_.y(), material_)));
-        set_.add(new RectYZ(min_.yz(), max_.yz(), max_.x(), material_));
-        set_.add(new FlipNormals(new RectYZ(min_.yz(), max_.yz(), min_.x(), material_)));
+        set_.add(new RectXY(min_.xy(), max_.xy(), max_.z(), material_));                  // back
+        set_.add(new FlipNormals(new RectXY(min_.xy(), max_.xy(), min_.z(), material_))); // front
+        set_.add(new RectXZ(min_.xz(), max_.xz(), max_.y(), material_));                  // top
+        set_.add(new FlipNormals(new RectXZ(min_.xz(), max_.xz(), min_.y(), material_))); // bottom
+        set_.add(new RectYZ(min_.yz(), max_.yz(), max_.x(), material_));                  // left
+        set_.add(new FlipNormals(new RectYZ(min_.yz(), max_.yz(), min_.x(), material_))); // right
     }
     bool hit(const Ray& r, float tMin, float tMax, HitInfo& info) const
     {
