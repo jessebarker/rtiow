@@ -82,11 +82,11 @@ public:
         aperture_ = aperture;
         focalDistance_ = focalDistance;
     }
-    Ray getRay(float u, float v)
+    Ray getRay(const vec2& uv)
     {
         vec3 rd = lensRadius_ * randomInUnitDisc();
         vec3 offset = u_ * rd.x() + v_ * rd.y();
         float time = time0_ + rg_.getZeroToOne() * (time1_ - time0_);
-        return Ray(from_ + offset, lowerLeft_ + u * horizontal_ + v * vertical_ - from_ - offset, time);
+        return Ray(from_ + offset, lowerLeft_ + uv.x() * horizontal_ + uv.y() * vertical_ - from_ - offset, time);
     }
 };

@@ -206,9 +206,9 @@ int main(int argc, char** argv)
             vec3 color;
             for (unsigned int s = 0; s < numSamples; s++)
             {
-                float v = float(y + rg.getZeroToOne()) / float(height);
-                float u = float(x + rg.getZeroToOne()) / float(width);
-                Ray r = camera.getRay(u, v);
+                vec2 uv(float(x + rg.getZeroToOne()) / float(width),
+                        float(y + rg.getZeroToOne()) / float(height));
+                Ray r = camera.getRay(uv);
                 color += colorAt(r, set);
             }
             color /= float(numSamples);
