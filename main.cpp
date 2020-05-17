@@ -16,20 +16,32 @@ namespace
 {
 RandomGenerator rg;
 
-vec3 colorAt(const Ray& r, const Hittable& world, int depth = 0)
+vec3 colorAt(const Ray& r, const Hittable& world, const vec3& attenuation, int depth = 0)
 {
-    HitInfo info;
     vec3 emitted;
+    // If we've gone as deep as we want, or if we're just not making a contribution, we're done
+    // (I _think_ it's ok not to take attenuation.length())
+    if (depth > 49 || vec3::dot(attenuation, attenuation) < 0.001f)
+    {
+        return emitted;
+    }
+
+    HitInfo info;
     if (world.hit(r, 0.001f, FLT_MAX, info))
     {
         Ray scattered;
-        vec3 attenuation;
+        vec3 curAttenuation;
         emitted = info.material->emitted(info.uv, info.point);
-        if (depth < 50 && info.material->scatter(r, info, attenuation, scattered))
+        if (info.material->scatter(r, info, curAttenuation, scattered))
         {
-            return emitted + attenuation * colorAt(scattered, world, depth + 1);
+            // We scattered.  Accumulate attenuation and go again.
+            return colorAt(scattered, world, attenuation * curAttenuation, depth + 1);
         }
+
+        // We didn't scatter, just return the current contribution
+        return emitted * attenuation;
     }
+
     return emitted;
 }
 
@@ -173,7 +185,7 @@ void createCornellBox(HittableSet& set, Camera& camera)
 
 int main(int argc, char** argv)
 {
-    const unsigned int width(400);
+    const unsigned int width(800);
     const unsigned int height(400);
     const float maxColor(255.99f);
     const unsigned int numSamples(400);
@@ -199,6 +211,7 @@ int main(int argc, char** argv)
     typedef tvec3<unsigned char> ucvec3;
     std::vector<ucvec3> imageData;
     imageData.reserve(width * height);
+    const vec3 initialAttenuation(1.0f);
     for (unsigned int y = height - 1; y >= 0 && y < height; y--)
     {
         for (unsigned int x = 0; x < width; x++)
@@ -206,10 +219,10 @@ int main(int argc, char** argv)
             vec3 color;
             for (unsigned int s = 0; s < numSamples; s++)
             {
-                float v = float(y + rg.getZeroToOne()) / float(height);
-                float u = float(x + rg.getZeroToOne()) / float(width);
-                Ray r = camera.getRay(u, v);
-                color += colorAt(r, set);
+                vec2 uv(float(x + rg.getZeroToOne()) / float(width),
+                        float(y + rg.getZeroToOne()) / float(height));
+                Ray r = camera.getRay(uv);
+                color += colorAt(r, set, initialAttenuation);
             }
             color /= float(numSamples);
             applyGamma(color);

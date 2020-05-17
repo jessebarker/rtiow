@@ -1,4 +1,4 @@
-CXXFLAGS = -Wall -Werror -std=c++11 -pedantic -g
+CXXFLAGS = -Wall -Werror -std=c++11 -pedantic -O3
 RTTARGET = rtiow
 RTSRCS = main.cpp
 
