@@ -127,7 +127,7 @@ void createPerlinSpheres(HittableSet& set)
 void createEmissiveScene(HittableSet& set, Camera& camera)
 {
     createPerlinSpheres(set);
-    Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f, 4.0f, 4.0f))); 
+    Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f))); 
     set.add(new Sphere(vec3(0.0f, 7.0f, 0.0f), 2.0f, light));
     vec2 min(3.0f, 1.0f);
     vec2 max(5.0f, 3.0f);
@@ -149,7 +149,7 @@ void createCornellBox(HittableSet& set, Camera& camera)
     Material* red = new Lambertian(new ConstantTexture(vec3(0.65f, 0.05f, 0.05f)));
     Material* white = new Lambertian(new ConstantTexture(vec3(0.73f)));
     Material* green = new Lambertian(new ConstantTexture(vec3(0.12f, 0.45f, 0.15f)));
-    Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f, 4.0f, 4.0f)));
+    Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f)));
 
     // The surrounding box itself
     vec2 boxMin(0.0f, 0.0f);
@@ -183,6 +183,83 @@ void createCornellBox(HittableSet& set, Camera& camera)
     camera.setExposure(0.0f, 1.0f);
 }
 
+void createMyScene(HittableSet& set, Camera& camera)
+{
+    Material* light = new DiffuseLight(new ConstantTexture(vec3(4.0f)));
+    vec2 lightMin(0.0f, 0.0f);
+    vec2 lightMax(2.0f, 2.0f);
+    set.add(new RectXZ(lightMin, lightMax, 3.7f, light));
+
+    // Ground boxes get their own BVH
+    Material* ground = new Lambertian(new ConstantTexture(vec3(0.5f, 0.8f, 0.5f)));
+    const unsigned int numGroundBoxes = 20;
+    const float w = 0.5f;
+    vec3 boxMin;
+    vec3 boxMax;
+    HittableSet* groundSet = new HittableSet();
+    for (unsigned int i = 0; i < numGroundBoxes; i++)
+    {
+        for (unsigned int j = 0; j < numGroundBoxes; j++)
+        {
+            boxMin.x(-5 + i * w);
+            boxMin.z(-5 + j * w);
+            boxMin.y(0.0f);
+            boxMax.x(boxMin.x() + w);
+            boxMax.y(0.5f * (rg.getZeroToOne() + 0.01f));
+            boxMax.z(boxMin.z() + w);
+            groundSet->add(new Box(boxMin, boxMax, ground));
+        }
+    }
+    groundSet->sortMe(0.0f, 1.0f);
+    set.add(groundSet);
+
+    const vec3 scPerlin(1.0f, 1.0f, 1.0f);
+    const vec3 scGlass(0.75f, 1.5f, 1.5f);
+    const vec3 scEnamel(1.0f, 1.0f, 0.0f);
+    const vec3 scReflection(0.0f, 2.0f, -2.5f);
+    const vec3 scReflection2(0.0f, 2.0f, 4.5f);
+    const vec3 scBox(-1.0f, 2.5f, 2.0f);
+    // Perlin ball
+    Texture* noise = new NoiseTexture(4.0f);
+    set.add(new Sphere(scPerlin, 0.4f, new Lambertian(noise)));
+    // Glass ball
+    set.add(new Sphere(scGlass, 0.4f, new Dielectric(1.5f)));
+    // Metal balls
+    set.add(new Sphere(scReflection, 2.0f, new Metal(vec3(0.9f))));
+    set.add(new Sphere(scReflection2, 2.0f, new Metal(vec3(0.9f))));
+    // Enamel ball
+    Hittable* colorGlass = new Sphere(scEnamel, 0.4f, new Dielectric(1.5f));
+    set.add(colorGlass);
+    set.add(new ConstantMedium(colorGlass, 100.0f, new ConstantTexture(vec3(0.9f, 0.0f, 0.0f))));
+
+    // Box of spheres
+    Material* boxMaterial = new Lambertian(new ConstantTexture(vec3(0.2f, 0.2f, 0.9f)));
+    HittableSet* boxSet = new HittableSet();
+    const unsigned int numSpheres = 1000;
+    for (unsigned int i = 0; i < numSpheres; i++)
+    {
+        boxSet->add(new Sphere(vec3(scBox.x() * rg.getZeroToOne(), scBox.y() * rg.getZeroToOne(), scBox.z() * rg.getZeroToOne()),
+                               0.05f, boxMaterial));
+    }
+    boxSet->sortMe(0.0f, 1.0f);
+    set.add(new RotateY(boxSet, 15.0f));
+
+    // Large clear/white sphere that surrounds us
+    Hittable* boundary = new Sphere(vec3(0.0f), 5.0f, new Dielectric(1.5));
+    set.add(new ConstantMedium(boundary, 0.0001f, new ConstantTexture(vec3(1.0f))));
+
+    vec3 lookFrom(8.0f, 2.0f, 3.0f);
+    vec3 lookAt(0.0f, 2.0f, 0.0f);
+    vec3 up(0.0f, 1.0f, 0.0f);
+    float distToFocus = (lookFrom - lookAt).length();
+    float aperture(0.0f);
+    float vFov = 30.0f;
+    camera.setOrientation(lookFrom, lookAt, up);
+    camera.setFov(vFov);
+    camera.setFocus(aperture, distToFocus);
+    camera.setExposure(0.0f, 1.0f);
+}
+
 int main(int argc, char** argv)
 {
     const unsigned int width(800);
@@ -198,7 +275,8 @@ int main(int argc, char** argv)
     //createPerlinSpheres(set);
     //createEarthScene(set);
     //createEmissiveScene(set, camera);
-    createCornellBox(set, camera);
+    //createCornellBox(set, camera);
+    createMyScene(set, camera);
     camera.applySettings();
     set.sortMe(0.0f, 1.0f);
 #ifdef DEBUG_BVH_SORT
